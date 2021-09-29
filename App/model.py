@@ -39,6 +39,39 @@ los mismos.
 
 # Construccion de modelos
 
+def newCatalog():
+    """
+    Inicializa el catálogo de artistas. Crea una lista vacia para guardar
+    todos los artistas, adicionalmente, crea una lista vacia para las obras. 
+    Retorna el catalogo inicializado.
+    """
+    catalog = {'artists': None,
+               'artworks': None,
+               'medium': None}
+    
+    catalog['artworks'] = lt.newList(datastructure="SINGLE_LINKED")
+    catalog['artists'] = lt.newList(datastructure="SINGLE_LINKED")
+
+    """
+    A continuacion se crean indices por diferentes criterios
+    para llegar a la informacion consultada.  Estos indices no
+    replican informacion, solo referencian los libros de la lista
+    creada en el paso anterior.
+    """
+
+    """
+    Este indice crea un map cuya llave es el medio de la obra
+    """
+    catalog['medium'] = mp.newMap(800,
+                                   maptype='CHAINING',
+                                   loadfactor=4.0,
+                                   comparefunction=compareAuthorsByName)
+    return catalog
+
+
+
+
+
 # Funciones para agregar informacion al catalogo
 
 # Funciones para creacion de datos
@@ -47,4 +80,22 @@ los mismos.
 
 # Funciones utilizadas para comparar elementos dentro de una lista
 
+
+def compareArtworksByMedium(medium, author):
+    """
+    Compara dos nombres de autor. El primero es una cadena
+    y el segundo un entry de un map
+    """
+    authentry = me.getKey(author)
+    if (medium == authentry):
+        return 0
+    elif (medium > authentry):
+        return 1
+    else:
+        return -1
+
+
+
 # Funciones de ordenamiento
+
+
