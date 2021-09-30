@@ -112,12 +112,13 @@ while True:
         n = int(input("Ingrese la cantidad de obras que desea conocer: "))
         result = controller.sortArtworksByDate(catalog, medio)
         print('\nLas ',n,' obras más antiguas son: \n')
-        i = 0
+        i = 1
         while i<=n:
             obra = lt.getElement(result,(i))
-            print("-Nombre: "+obra["DisplayName"])
+            print("-Nombre: "+obra["Title"])
             print("-Año: "+str(obra["Date"]))
-            print("-ID: "+obra["ObjectID"]+"\n")
+            print("-ID: "+obra["ObjectID"])
+            print("-Medio: "+obra["Medium"]+"\n")
             i+=1
 
 

@@ -49,8 +49,8 @@ def newCatalog():
                'artworks': None,
                'medium': None}
     
-    catalog['artists'] = lt.newList("ARRAY_LIST", compareArtistsConstituentID)
-    catalog['artworks'] = lt.newList("ARRAY_LIST", compareArtworksObjectID)
+    catalog['artists'] = lt.newList("SINGLED_LINKED", compareArtistsConstituentID)
+    catalog['artworks'] = lt.newList("SINGLE_LINKED", compareArtworksObjectID)
     
     """
     A continuacion se crean indices por diferentes criterios
@@ -62,7 +62,7 @@ def newCatalog():
     """
     Este indice crea un map cuya llave es el medio de la obra
     """
-    catalog['medium'] = mp.newMap(10000,
+    catalog['medium'] = mp.newMap(800,
                                    maptype='CHAINING',
                                    loadfactor=4.0,
                                    comparefunction=compareArtworksByMedium)
@@ -96,7 +96,7 @@ def addArtist(catalog, artist):
     
 def addMedium(catalog, namemedium, artwork):
     """
-    Esta función adiciona un medio.
+    Esta función adiciona una obra a la lista de un medio.
     """
     mediums = catalog['medium']
     existmedium = mp.contains(mediums, namemedium)
@@ -117,13 +117,24 @@ def newMedium(name):
     específico. Se crea una lista para guardar los
     libros de dicho autor.
     """
-    medium = {'medium': "",
+    medium = {'name': "",
               "artworks": None}
     medium['name'] = name
     medium['artworks'] = lt.newList('SINGLE_LINKED', compareArtworksByMedium)
     return medium
 
 # Funciones de consulta
+
+
+def getArtworksByMedium(catalog, namemedium):
+    """
+    Retorna un medio con sus obras a partir del nombre del medio
+    """
+    medium = mp.get(catalog['medium'], namemedium)
+    if medium:
+        return me.getValue(medium)
+    return None
+
 
 # Funciones utilizadas para comparar elementos dentro de una lista
 
@@ -156,7 +167,7 @@ def compareArtworksObjectID(id1, id2):
 
 def compareArtworksByMedium(medium, author):
     """
-    Compara dos medios de obras. El primero es el medio
+    Compara dos medios de obras. El primero es una cadena
     y el segundo un entry de un map
     """
     authentry = me.getKey(author)
@@ -176,15 +187,13 @@ def cmpArtworkByDate(artwork1, artwork2):
     artwork1: informacion de la primera obra que incluye su valor 'Date'
     artwork2: informacion de la segunda obra que incluye su valor 'Date'
     """
-    print(artwork1["Date"])
-    return (str(artwork1["Date"])<str(artwork2["Date"])) and artwork1["Date"] != None and artwork2["Date"] != None
+    return artwork1["Date"]<artwork2["Date"] and artwork1["Date"] != None and artwork2["Date"] != None
 
 
 # Funciones de ordenamiento
 
 def sortArtworksByDate(catalog, medio):
-    medium = mp.get(catalog['medium'], medio)
-    if medium:
-        sub_list = me.getValue(medium).copy()
-        sorted_list = sm.sort(sub_list, cmpArtworkByDate)
-        return sorted_list
+    artworksMedium = getArtworksByMedium(catalog, medio)
+    sub_list = artworksMedium["artworks"].copy()
+    sorted_list = sm.sort(sub_list, cmpArtworkByDate)
+    return sorted_list
