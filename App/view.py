@@ -38,12 +38,13 @@ def printMenu():
     print("Bienvenido")
     print("1- Cargar información en el catálogo")
     print("2- Cargar las n obras más antiguas para un medio específico - LAB 5")
-    print("3- Listar cronológicamente a los artistas")
-    print("4- Listar cronológicamente las adquisiciones")
-    print("5- Clasificar las obras de un artista por técnica")
-    print("6- Clasificar las obras por la nacionalidad de sus creadores")
-    print("7- Transportar obras de un departamento")
-    print("8- Proponer una nueva exposición en el museo")
+    print("3. Número total de obras de una nacionalidad - LAB 6")
+    print("4- Listar cronológicamente a los artistas")
+    print("5- Listar cronológicamente las adquisiciones")
+    print("6- Clasificar las obras de un artista por técnica")
+    print("7- Clasificar las obras por la nacionalidad de sus creadores")
+    print("8- Transportar obras de un departamento")
+    print("9- Proponer una nueva exposición en el museo")
     print("0- Salir")
 
 
@@ -111,7 +112,7 @@ while True:
         medio = input("Ingrese el medio específico para el cual quiere conocer las obras más antiguas: ")
         n = int(input("Ingrese la cantidad de obras que desea conocer: "))
         result = controller.sortArtworksByDate(catalog, medio)
-        print('\nLas ',n,' obras más antiguas son: \n')
+        print('\nLas ',n,' obras más antiguas del medio ',medio,' son: \n')
         i = 1
         while i<=n:
             obra = lt.getElement(result,(i))
@@ -121,54 +122,59 @@ while True:
             print("-Medio: "+obra["Medium"]+"\n")
             i+=1
 
-
     elif int(inputs[0]) == 3:
+        nacion = input("Ingrese nacionalidad a contar obras: ")
+        result = controller.cantObrasNacion(catalog, nacion)
+        print('\nPara la nacionalidad '+nacion+' hay un total de '+str(result)+' obras.')
 
-        anioI = int(input("Ingrese el año incial del rango: "))
-        anioF = int(input("Ingrese el año final del rango: "))
-        result = controller.sortArtists(catalog,anioI,anioF)
-        printCronoArtists(result)
+        """
+        elif int(inputs[0]) == 4:
 
+            anioI = int(input("Ingrese el año incial del rango: "))
+            anioF = int(input("Ingrese el año final del rango: "))
+            result = controller.sortArtists(catalog,anioI,anioF)
+            printCronoArtists(result)
+
+            
         
-    
-    elif int(inputs[0]) == 4:
-        diaI = int(input("Ingrese el día incial del rango: "))
-        mesI = int(input("Ingrese el mes incial del rango: "))
-        anioI = int(input("Ingrese el año incial del rango: "))
-        diaF = int(input("Ingrese el día final del rango: "))
-        mesF = int(input("Ingrese el mes final del rango: "))
-        anioF = int(input("Ingrese el año final del rango: "))
-        result = controller.sortArtworks(catalog, anioI, mesI, diaI, anioF, mesF, diaF)
-        printSortArtworks(result)
+        elif int(inputs[0]) == 5:
+            diaI = int(input("Ingrese el día incial del rango: "))
+            mesI = int(input("Ingrese el mes incial del rango: "))
+            anioI = int(input("Ingrese el año incial del rango: "))
+            diaF = int(input("Ingrese el día final del rango: "))
+            mesF = int(input("Ingrese el mes final del rango: "))
+            anioF = int(input("Ingrese el año final del rango: "))
+            result = controller.sortArtworks(catalog, anioI, mesI, diaI, anioF, mesF, diaF)
+            printSortArtworks(result)
 
 
 
 
 
-    elif int(inputs[0]) == 6:
+        elif int(inputs[0]) == 7:
 
-        result = controller.artworksNacionalidad(catalog)
-        printArtworksNacionalidad(result)
-
-
-
-
-    elif int(inputs[0]) == 7:
-        dept = input("Ingrese el departamente del museo del que quiere conocer el costo de transporte: ")
-        result = controller.costoTransDept(catalog, dept)
-        printCostoTransDept(result)
-    
+            result = controller.artworksNacionalidad(catalog)
+            printArtworksNacionalidad(result)
 
 
 
-    elif int(inputs[0]) == 8:
-        anioI = int(input("Ingrese el año incial del rango: "))
-        anioF = int(input("Ingrese el año final del rango: "))
-        area = float(input("Ingrese el área disponible en metros cuadrados: "))
-        result = controller.nuevaExpo(catalog,anioI,anioF,area)
-        printNuevaExpo(result, catalog)
+
+        elif int(inputs[0]) == 8:
+            dept = input("Ingrese el departamente del museo del que quiere conocer el costo de transporte: ")
+            result = controller.costoTransDept(catalog, dept)
+            printCostoTransDept(result)
+        
 
 
+
+        elif int(inputs[0]) == 9:
+            anioI = int(input("Ingrese el año incial del rango: "))
+            anioF = int(input("Ingrese el año final del rango: "))
+            area = float(input("Ingrese el área disponible en metros cuadrados: "))
+            result = controller.nuevaExpo(catalog,anioI,anioF,area)
+            printNuevaExpo(result, catalog)
+
+        """
 
     else:
         print("Usted ha salido de la aplicación.")

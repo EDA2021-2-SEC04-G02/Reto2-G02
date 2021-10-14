@@ -47,7 +47,8 @@ def newCatalog():
     """
     catalog = {'artists': None,
                'artworks': None,
-               'medium': None}
+               'medium': None,
+               'nationality': None}
     
     catalog['artists'] = lt.newList("SINGLED_LINKED", compareArtistsConstituentID)
     catalog['artworks'] = lt.newList("SINGLE_LINKED", compareArtworksObjectID)
@@ -66,6 +67,11 @@ def newCatalog():
                                    maptype='CHAINING',
                                    loadfactor=4.0,
                                    comparefunction=compareArtworksByMedium)
+
+    catalog['nationality'] = mp.newMap(100,
+                                   maptype='PROBING',
+                                   loadfactor=0.5,
+                                   comparefunction=compareArtworksByNationality)
     return catalog
 
 
@@ -83,8 +89,14 @@ def addArtwork(catalog, artwork):
     Finalmente crea una entrada en el Map de años, para indicar que este
     libro fue publicaco en ese año.
     """
+    nombresyNacionalidades = encontrarNombresyNacionalidades(artwork["ConstituentID"][1:-1].split(","), catalog)
+    artwork["Artists"] = nombresyNacionalidades[0]
+    artwork["Nationalities"] = nombresyNacionalidades[1]
     lt.addLast(catalog['artworks'], artwork)
     addMedium(catalog, artwork["Medium"], artwork)
+    for i in range(1,lt.size(artwork["Nationalities"])+1):
+        addNationality(catalog, lt.getElement(artwork["Nationalities"], i), artwork)
+    
 
 
 def addArtist(catalog, artist):
@@ -107,15 +119,31 @@ def addMedium(catalog, namemedium, artwork):
         medium = newMedium(namemedium)
         mp.put(mediums, namemedium, medium)
     lt.addLast(medium['artworks'], artwork)
-    
+
+
+
+def addNationality(catalog, nameNationality, artwork):
+    """
+    Esta función adiciona una obra a la lista de una nacionalidad.
+    """
+    nationalities = catalog['nationality']
+    existNationality = mp.contains(nationalities, nameNationality)
+    if existNationality:
+        entry = mp.get(nationalities, nameNationality)
+        nationality = me.getValue(entry)
+    else:
+        nationality = newNationality(nameNationality)
+        mp.put(nationalities, nameNationality, nationality)
+    lt.addLast(nationality['artworks'], artwork)
+
+
 
 # Funciones para creacion de datos
 
 def newMedium(name):
     """
     Crea una nueva estructura para modelar las obras con un medio
-    específico. Se crea una lista para guardar los
-    libros de dicho autor.
+    específico.
     """
     medium = {'name': "",
               "artworks": None}
@@ -123,7 +151,40 @@ def newMedium(name):
     medium['artworks'] = lt.newList('SINGLE_LINKED', compareArtworksByMedium)
     return medium
 
+
+def newNationality(name):
+    """
+    Crea una nueva estructura para modelar las obras con una nacionalidad 
+    específica.
+    """
+    nationality = {'name': "",
+              "artworks": None}
+    nationality['name'] = name
+    nationality['artworks'] = lt.newList('SINGLE_LINKED', compareArtworksByNationality)
+    return nationality
+
+
 # Funciones de consulta
+
+
+def encontrarNombresyNacionalidades(artistas, catalog):
+    """
+    Encuentra nombres y nacionalidades a partir de sus ID
+    """
+    nombres = lt.newList(datastructure="ARRAY_LIST")
+    nacionalidades = lt.newList(datastructure="ARRAY_LIST")
+    for id in artistas:
+        encontro = False
+        i = 0
+        while not encontro and i< lt.size(catalog["artists"]):
+            if lt.getElement(catalog["artists"],i)["ConstituentID"] == str(id).strip():
+                lt.addLast(nombres, lt.getElement(catalog["artists"],i)["DisplayName"])
+                lt.addLast(nacionalidades, lt.getElement(catalog["artists"],i)["Nationality"])
+                encontro = True
+            i += 1
+    return nombres, nacionalidades
+
+
 
 
 def getArtworksByMedium(catalog, namemedium):
@@ -134,6 +195,16 @@ def getArtworksByMedium(catalog, namemedium):
     if medium:
         return me.getValue(medium)
     return None
+
+
+
+def cantObrasNacion(catalog, nacion):
+    nacion = mp.get(catalog["nationality"], nacion)
+    if nacion:
+        result = (me.getValue(nacion))["artworks"]
+        return lt.size(result)
+    return None
+
 
 
 # Funciones utilizadas para comparar elementos dentro de una lista
@@ -165,15 +236,30 @@ def compareArtworksObjectID(id1, id2):
 
 
 
-def compareArtworksByMedium(medium, author):
+def compareArtworksByMedium(medium, medio):
     """
     Compara dos medios de obras. El primero es una cadena
     y el segundo un entry de un map
     """
-    authentry = me.getKey(author)
-    if (medium == authentry):
+    llaveMedio = me.getKey(medio)
+    if (medium == llaveMedio):
         return 0
-    elif (medium > authentry):
+    elif (medium > llaveMedio):
+        return 1
+    else:
+        return -1
+
+
+
+def compareArtworksByNationality(nationality, nacionalidad):
+    """
+    Compara dos nacionalidades de obras. El primero es una cadena
+    y el segundo un entry de un map
+    """
+    llaveNacionalidad = me.getKey(nacionalidad)
+    if (nationality == llaveNacionalidad):
+        return 0
+    elif (nationality > llaveNacionalidad):
         return 1
     else:
         return -1
