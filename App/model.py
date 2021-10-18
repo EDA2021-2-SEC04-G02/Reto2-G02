@@ -26,6 +26,7 @@
 
 
 import config as cf
+import datetime as dt
 from DISClib.ADT import list as lt
 from DISClib.ADT import map as mp
 from DISClib.DataStructures import mapentry as me
@@ -63,14 +64,24 @@ def newCatalog():
     """
     Este indice crea un map cuya llave es el medio de la obra
     """
+    catalog['date'] = mp.newMap(150,
+                            maptype='CHAINING',
+                            loadfactor=4.0,
+                            comparefunction=compareArtistsByBeginDate)
+
+    catalog['dateAdquirido'] = mp.newMap(900,
+                                    maptype='CHAINING',
+                                    loadfactor=4.0,
+                                    comparefunction=compareArtworksByDate)
+
     catalog['medium'] = mp.newMap(800,
-                                   maptype='CHAINING',
-                                   loadfactor=4.0,
+                                   maptype='PROBING',
+                                   loadfactor=0.5,
                                    comparefunction=compareArtworksByMedium)
 
     catalog['nationality'] = mp.newMap(100,
-                                   maptype='PROBING',
-                                   loadfactor=0.5,
+                                   maptype='CHAINING',
+                                   loadfactor=4.0,
                                    comparefunction=compareArtworksByNationality)
     return catalog
 
@@ -94,6 +105,7 @@ def addArtwork(catalog, artwork):
     artwork["Nationalities"] = nombresyNacionalidades[1]
     lt.addLast(catalog['artworks'], artwork)
     addMedium(catalog, artwork["Medium"], artwork)
+    addDateAdquirido(catalog, artwork["DateAcquired"], artwork)
     for i in range(1,lt.size(artwork["Nationalities"])+1):
         addNationality(catalog, lt.getElement(artwork["Nationalities"], i), artwork)
     
@@ -104,8 +116,42 @@ def addArtist(catalog, artist):
     Adiciona un artista a la lista
     """
     lt.addLast(catalog['artists'], artist)
+    addBeginDate(catalog, artist["BeginDate"], artist)
 
-    
+
+
+def addBeginDate(catalog, nameDate, artist):
+    """
+    Esta función adiciona un artista a la lista de una fecha.
+    """
+    dates = catalog['date']
+    existDate = mp.contains(dates, str(nameDate))
+    if existDate:
+        entry = mp.get(dates, str(nameDate))
+        date = me.getValue(entry)
+    else:
+        date = newDate(str(nameDate))
+        mp.put(dates, str(nameDate), date)
+    lt.addLast(date['artists'], artist)
+
+
+
+def addDateAdquirido(catalog, nameDate, artwork):
+    """
+    Esta función adiciona un artista a la lista de una fecha.
+    """
+    dates = catalog['dateAdquirido']
+    existDate = mp.contains(dates, str(nameDate))
+    if existDate:
+        entry = mp.get(dates, str(nameDate))
+        date = me.getValue(entry)
+    else:
+        date = newDateAdquirido(str(nameDate))
+        mp.put(dates, str(nameDate), date)
+    lt.addLast(date['artworks'], artwork)
+
+
+
 def addMedium(catalog, namemedium, artwork):
     """
     Esta función adiciona una obra a la lista de un medio.
@@ -127,6 +173,8 @@ def addNationality(catalog, nameNationality, artwork):
     Esta función adiciona una obra a la lista de una nacionalidad.
     """
     nationalities = catalog['nationality']
+    if nameNationality == "":
+        nameNationality = "Nationality unknown"
     existNationality = mp.contains(nationalities, nameNationality)
     if existNationality:
         entry = mp.get(nationalities, nameNationality)
@@ -139,6 +187,32 @@ def addNationality(catalog, nameNationality, artwork):
 
 
 # Funciones para creacion de datos
+
+
+def newDate(nameDate):
+    """
+    Crea una nueva estructura para modelar los artistas con un BeginDate
+    específico.
+    """
+    date = {'name': "",
+            "artists": None}
+    date['name'] = nameDate
+    date['artists'] = lt.newList('SINGLE_LINKED', compareArtistsByBeginDate)
+    return date
+
+
+def newDateAdquirido(nameDate):
+    """
+    Crea una nueva estructura para modelar las obras con un DateAcquired
+    específico.
+    """
+    date = {'name': "",
+            "artworks": None}
+    date['name'] = nameDate
+    date['artworks'] = lt.newList('SINGLE_LINKED', compareArtworksByDate)
+    return date
+
+
 
 def newMedium(name):
     """
@@ -198,6 +272,24 @@ def getArtworksByMedium(catalog, namemedium):
 
 
 
+def artworksNacionalidad(catalog):
+    """
+    Clasifica las obras por la nacionalidad de sus creadores.
+    """
+    llaves = mp.keySet(catalog["nationality"])
+    lstNacion = lt.newList(datastructure="ARRAY_LIST")
+    for key in lt.iterator(llaves):
+        tamanio = cantObrasNacion(catalog, key)
+        lt.addLast(lstNacion, (key,tamanio))
+    ordenada = sm.sort(lstNacion, cmpNacionalidad)
+    nacionMayor = lt.getElement(ordenada,1)[0]
+    nacion = mp.get(catalog["nationality"], nacionMayor)
+    result = (me.getValue(nacion))["artworks"]
+    return ordenada, result
+
+
+
+
 def cantObrasNacion(catalog, nacion):
     nacion = mp.get(catalog["nationality"], nacion)
     if nacion:
@@ -235,6 +327,33 @@ def compareArtworksObjectID(id1, id2):
 
 
 
+def compareArtistsByBeginDate(date, fecha):
+    """
+    Compara dos fechas de artistas. El primero es una cadena
+    y el segundo un entry de un map
+    """
+    llaveFecha = me.getKey(fecha)
+    if (date == llaveFecha):
+        return 0
+    elif (date > llaveFecha):
+        return 1
+    else:
+        return -1
+
+
+def compareArtworksByDate(date, fecha):
+    """
+    Compara dos fechas de obras. El primero es una cadena
+    y el segundo un entry de un map
+    """
+    llaveFecha = me.getKey(fecha)
+    if (date == llaveFecha):
+        return 0
+    elif (date > llaveFecha):
+        return 1
+    else:
+        return -1
+
 
 def compareArtworksByMedium(medium, medio):
     """
@@ -265,6 +384,13 @@ def compareArtworksByNationality(nationality, nacionalidad):
         return -1
 
 
+def cmpNacionalidad(nacionalidad1, nacionalidad2):
+    """
+    Devuelve verdadero (True) si nacionalidad1 es mayor a nacionalidad2.
+    """
+    return nacionalidad1[1]>nacionalidad2[1]
+
+
 
 def cmpArtworkByDate(artwork1, artwork2):
     """
@@ -276,10 +402,59 @@ def cmpArtworkByDate(artwork1, artwork2):
     return artwork1["Date"]<artwork2["Date"] and artwork1["Date"] != None and artwork2["Date"] != None
 
 
+def cmpArtworkByDateAcquired(artwork1, artwork2):
+    """
+    Devuelve verdadero (True) si el 'DateAcquired' de artwork1 es menor que el de artwork2
+    Args:
+    artwork1: informacion de la primera obra que incluye su valor 'DateAcquired'
+    artwork2: informacion de la segunda obra que incluye su valor 'DateAcquired'
+    """
+    return (artwork1)<(artwork2) and artwork1 != None and artwork2 != None
+
+
 # Funciones de ordenamiento
 
-def sortArtworksByDate(catalog, medio):
-    artworksMedium = getArtworksByMedium(catalog, medio)
-    sub_list = artworksMedium["artworks"].copy()
-    sorted_list = sm.sort(sub_list, cmpArtworkByDate)
-    return sorted_list
+
+
+def sortArtists(catalog,anioI,anioF):
+    """
+    Req 1: Ordenar artistas por fecha de nacimiento.
+    """
+    artistas = lt.newList(datastructure="ARRAY_LIST")
+    for anio in range(anioI, anioF+1):
+        date = mp.get(catalog["date"], str(anio))
+        if date:
+            artistsDate = me.getValue(date)['artists']
+            for artist in lt.iterator(artistsDate):
+                lt.addLast(artistas, artist)
+    return artistas
+
+
+
+def sortArtworks(catalog, anioI, mesI, diaI, anioF, mesF, diaF):
+    """
+    Req 2: Ordenar obras por fecha de adquisición.
+    """
+    obras = lt.newList(datastructure="ARRAY_LIST")
+    fechaI = str(dt.datetime(anioI, mesI, diaI))
+    fechaF = str(dt.datetime(anioF, mesF, diaF))
+    llaves = mp.keySet(catalog["dateAdquirido"])
+    llavesFiltradas = lt.newList(datastructure="ARRAY_LIST")
+    
+    for key in lt.iterator(llaves):
+        if key != None and key != "" and fechaI <= key and fechaF >= key:
+            lt.addLast(llavesFiltradas, key)
+
+    llavesOrdenadas = sm.sort(llavesFiltradas, cmpArtworkByDateAcquired)
+    
+    obrasAdq = 0
+    for key in lt.iterator(llavesOrdenadas):
+        date = mp.get(catalog["dateAdquirido"], str(key))
+        artworkDate = me.getValue(date)['artworks']
+        for artwork in lt.iterator(artworkDate):
+            lt.addLast(obras, artwork)
+            if "purchase" in artwork["CreditLine"].lower():
+                obrasAdq += 1
+    return obrasAdq, obras
+
+

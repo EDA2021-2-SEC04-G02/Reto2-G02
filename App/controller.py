@@ -82,14 +82,31 @@ def loadArtworks(catalog):
 
 # Funciones de ordenamiento
 
-def sortArtworksByDate(catalog, medio):
-    result = model.sortArtworksByDate(catalog, medio)
+
+def sortArtists(catalog,anioI,anioF):
+    """
+    Ordena los artistas por fecha de nacimiento
+    """
+    result = model.sortArtists(catalog,anioI,anioF)
+    return result
+
+
+
+def sortArtworks(catalog, anioI, mesI, diaI, anioF, mesF, diaF):
+    """
+    Ordena las obras por fecha de adquisición
+    """
+    result = model.sortArtworks(catalog, anioI, mesI, diaI, anioF, mesF, diaF)
     return result
 
 
 # Funciones de consulta sobre el catálogo
 
 
-def cantObrasNacion(catalog, nacion):
-    result = model.cantObrasNacion(catalog, nacion)
+def artworksNacionalidad(catalog):
+    """
+    Clasifica las obras por la nacionalidad de sus creadores.
+    """
+    result = model.artworksNacionalidad(catalog)
     return result
+

@@ -34,17 +34,17 @@ se hace la solicitud al controlador para ejecutar la
 operación solicitada
 """
 
+
+
 def printMenu():
     print("Bienvenido")
     print("1- Cargar información en el catálogo")
-    print("2- Cargar las n obras más antiguas para un medio específico - LAB 5")
-    print("3. Número total de obras de una nacionalidad - LAB 6")
-    print("4- Listar cronológicamente a los artistas")
-    print("5- Listar cronológicamente las adquisiciones")
-    print("6- Clasificar las obras de un artista por técnica")
-    print("7- Clasificar las obras por la nacionalidad de sus creadores")
-    print("8- Transportar obras de un departamento")
-    print("9- Proponer una nueva exposición en el museo")
+    print("2- Listar cronológicamente a los artistas")
+    print("3- Listar cronológicamente las adquisiciones")
+    print("4- Clasificar las obras de un artista por técnica")
+    print("5- Clasificar las obras por la nacionalidad de sus creadores")
+    print("6- Transportar obras de un departamento")
+    print("7- Encontrar los artistas más prolíficos del museo")
     print("0- Salir")
 
 
@@ -66,6 +66,77 @@ def cargarData(catalog):
 
 
 
+
+def printCronoArtists(artistas):
+    """
+    Imprime el resultado de listar cronológicamente los artistas 
+    que nacieron en un rango de años
+    """
+    tamanio = lt.size(artistas)
+    print("\nNúmero total de artistas en dicho rango: "+str(tamanio)+"\n")
+    print("Los primeros y últimos 3 artistas son: \n")
+    for i in range(1,4):
+        print("Nombre: "+lt.getElement(artistas,i)["DisplayName"])
+        print("Año de nacimiento: "+lt.getElement(artistas,i)["BeginDate"])
+        print("Año de fallecimiento: "+lt.getElement(artistas,i)["EndDate"])
+        print("Nacionalidad: "+lt.getElement(artistas,i)["Nationality"])
+        print("Género: "+lt.getElement(artistas,i)["Gender"])
+        print("\n")
+    print(". . . . . . . . . . . . . . . . . . . . . . . . . . . . . .\n")
+    for i in range(-2,1):
+        print("Nombre: "+lt.getElement(artistas,tamanio+i)["DisplayName"])
+        print("Año de nacimiento: "+lt.getElement(artistas,tamanio+i)["BeginDate"])
+        print("Año de fallecimiento: "+lt.getElement(artistas,tamanio+i)["EndDate"])
+        print("Nacionalidad: "+lt.getElement(artistas,tamanio+i)["Nationality"])
+        print("Género: "+lt.getElement(artistas,tamanio+i)["Gender"])
+        print("\n")
+
+
+
+def printSortArtworks(ord_artworks):
+    """
+    Imprime el resultado de listar cronológicamente las obras 
+    adquiridas en un rango de fechas
+    """
+    tamanio = lt.size(ord_artworks[1])
+    print("\nNúmero total de obras en el rango cronológico: "+str(tamanio)+"\n")
+    print("Número total de obras adquiridas por compra: "+str(ord_artworks[0])+"\n")
+    printArtworks(ord_artworks,tamanio)
+
+
+
+def printArtworks(ord_artworks, tamanio):
+    print("Sus primeras y últimas 3 obras son: \n")
+    for i in range(1,4):
+        print("Título: "+lt.getElement(ord_artworks[1],i)["Title"])
+        print("Artista(s): "+str(lt.getElement(ord_artworks[1],i)["Artists"]["elements"])[1:-1])
+        print("Fecha: "+lt.getElement(ord_artworks[1],i)["Date"])
+        print("Fecha de adquisición: "+lt.getElement(ord_artworks[1],i)["DateAcquired"])
+        print("Medio: "+lt.getElement(ord_artworks[1],i)["Medium"])
+        print("Dimensiones: "+lt.getElement(ord_artworks[1],i)["Dimensions"])
+        print("\n")
+    print(". . . . . . . . . . . . . . . . . . . . . . . . . . . . . .\n")
+    for i in range(-2,1):
+        print("Título: "+lt.getElement(ord_artworks[1],tamanio+i)["Title"])
+        print("Artista(s): "+str(lt.getElement(ord_artworks[1],tamanio+i)["Artists"]["elements"])[1:-1])
+        print("Fecha: "+lt.getElement(ord_artworks[1],tamanio+i)["Date"])
+        print("Fecha de adquisición: "+lt.getElement(ord_artworks[1],tamanio+i)["DateAcquired"])
+        print("Medio: "+lt.getElement(ord_artworks[1],tamanio+i)["Medium"])
+        print("Dimensiones: "+lt.getElement(ord_artworks[1],tamanio+i)["Dimensions"])
+        print("\n")
+        
+
+
+
+
+def printArtworksNacionalidad(result):
+    print("\nTOP 10 - Nacionalidades en el MOMA\n")
+    print("Nacionalidad : Obras")
+    for i in range(1,11): 
+        print(lt.getElement(result[0],i)[0]+" : "+str(lt.getElement(result[0],i)[1]))
+    print("\nLa nacionalidad con más obras en el MOMA es: ",lt.getElement(result[0],1)[0])
+    tamanio = lt.size(result[1])
+    printArtworks(result, tamanio)
 
 
 
@@ -109,72 +180,46 @@ while True:
 
     
     elif int(inputs[0]) == 2:
-        medio = input("Ingrese el medio específico para el cual quiere conocer las obras más antiguas: ")
-        n = int(input("Ingrese la cantidad de obras que desea conocer: "))
-        result = controller.sortArtworksByDate(catalog, medio)
-        print('\nLas ',n,' obras más antiguas del medio ',medio,' son: \n')
-        i = 1
-        while i<=n:
-            obra = lt.getElement(result,(i))
-            print("-Nombre: "+obra["Title"])
-            print("-Año: "+str(obra["Date"]))
-            print("-ID: "+obra["ObjectID"])
-            print("-Medio: "+obra["Medium"]+"\n")
-            i+=1
 
+        anioI = int(input("Ingrese el año incial del rango: "))
+        anioF = int(input("Ingrese el año final del rango: "))
+        result = controller.sortArtists(catalog,anioI,anioF)
+        printCronoArtists(result)
+
+        
+    
     elif int(inputs[0]) == 3:
-        nacion = input("Ingrese nacionalidad a contar obras: ")
-        result = controller.cantObrasNacion(catalog, nacion)
-        print('\nPara la nacionalidad '+nacion+' hay un total de '+str(result)+' obras.')
-
-        """
-        elif int(inputs[0]) == 4:
-
-            anioI = int(input("Ingrese el año incial del rango: "))
-            anioF = int(input("Ingrese el año final del rango: "))
-            result = controller.sortArtists(catalog,anioI,anioF)
-            printCronoArtists(result)
-
-            
-        
-        elif int(inputs[0]) == 5:
-            diaI = int(input("Ingrese el día incial del rango: "))
-            mesI = int(input("Ingrese el mes incial del rango: "))
-            anioI = int(input("Ingrese el año incial del rango: "))
-            diaF = int(input("Ingrese el día final del rango: "))
-            mesF = int(input("Ingrese el mes final del rango: "))
-            anioF = int(input("Ingrese el año final del rango: "))
-            result = controller.sortArtworks(catalog, anioI, mesI, diaI, anioF, mesF, diaF)
-            printSortArtworks(result)
+        diaI = int(input("Ingrese el día incial del rango: "))
+        mesI = int(input("Ingrese el mes incial del rango: "))
+        anioI = int(input("Ingrese el año incial del rango: "))
+        diaF = int(input("Ingrese el día final del rango: "))
+        mesF = int(input("Ingrese el mes final del rango: "))
+        anioF = int(input("Ingrese el año final del rango: "))
+        result = controller.sortArtworks(catalog, anioI, mesI, diaI, anioF, mesF, diaF)
+        printSortArtworks(result)
 
 
 
 
 
-        elif int(inputs[0]) == 7:
-
-            result = controller.artworksNacionalidad(catalog)
-            printArtworksNacionalidad(result)
-
+    elif int(inputs[0]) == 5:
+        result = controller.artworksNacionalidad(catalog)
+        printArtworksNacionalidad(result)
 
 
 
-        elif int(inputs[0]) == 8:
-            dept = input("Ingrese el departamente del museo del que quiere conocer el costo de transporte: ")
-            result = controller.costoTransDept(catalog, dept)
-            printCostoTransDept(result)
-        
+
+    elif int(inputs[0]) == 6:
+        dept = input("Ingrese el departamente del museo del que quiere conocer el costo de transporte: ")
+        result = controller.costoTransDept(catalog, dept)
+        "printCostoTransDept(result)"
+    
 
 
 
-        elif int(inputs[0]) == 9:
-            anioI = int(input("Ingrese el año incial del rango: "))
-            anioF = int(input("Ingrese el año final del rango: "))
-            area = float(input("Ingrese el área disponible en metros cuadrados: "))
-            result = controller.nuevaExpo(catalog,anioI,anioF,area)
-            printNuevaExpo(result, catalog)
-
-        """
+    elif int(inputs[0]) == 7:
+        ""
+    
 
     else:
         print("Usted ha salido de la aplicación.")
