@@ -48,8 +48,11 @@ def newCatalog():
     """
     catalog = {'artists': None,
                'artworks': None,
+               'date': None,
+               'dateAdquirido': None,
                'medium': None,
-               'nationality': None}
+               'nationality': None,
+               'artistaObra': None}
     
     catalog['artists'] = lt.newList("SINGLED_LINKED", compareArtistsConstituentID)
     catalog['artworks'] = lt.newList("SINGLE_LINKED", compareArtworksObjectID)
@@ -83,6 +86,11 @@ def newCatalog():
                                    maptype='CHAINING',
                                    loadfactor=4.0,
                                    comparefunction=compareArtworksByNationality)
+
+    catalog['artistaObra'] = mp.newMap(2000,
+                                   maptype='CHAINING',
+                                   loadfactor=4.0,
+                                   comparefunction=compareArtworksByArtist)
     return catalog
 
 
@@ -106,9 +114,11 @@ def addArtwork(catalog, artwork):
     lt.addLast(catalog['artworks'], artwork)
     addMedium(catalog, artwork["Medium"], artwork)
     addDateAdquirido(catalog, artwork["DateAcquired"], artwork)
-    for i in range(1,lt.size(artwork["Nationalities"])+1):
-        addNationality(catalog, lt.getElement(artwork["Nationalities"], i), artwork)
-    
+    for nationality in lt.iterator(artwork["Nationalities"]):
+        addNationality(catalog, nationality, artwork)
+    for artistObra in lt.iterator(artwork["Artists"]):
+        addArtistaObra(catalog, artistObra, artwork)
+
 
 
 def addArtist(catalog, artist):
@@ -186,6 +196,37 @@ def addNationality(catalog, nameNationality, artwork):
 
 
 
+def addArtistaObra(catalog, nameArtist, artwork):
+    """
+    Esta función adiciona una obra a la lista de un artista.
+    """
+    artistas = catalog['artistaObra']
+    existArtist = mp.contains(artistas, nameArtist)
+    if existArtist:
+        entry = mp.get(artistas, nameArtist)
+        artist = me.getValue(entry)
+    else:
+        artist = newArtistaObra(nameArtist)
+        mp.put(artistas, nameArtist, artist)
+    lt.addLast(artist['artworks'], artwork)
+
+
+
+
+def addMediumBono(medio, namemedium, artwork):
+    """
+    Esta función adiciona una obra a la lista de un medio.
+    """
+    existmedium = mp.contains(medio, namemedium)
+    if existmedium:
+        entry = mp.get(medio, namemedium)
+        medium = me.getValue(entry)
+    else:
+        medium = newMedium(namemedium)
+        mp.put(medio, namemedium, medium)
+    lt.addLast(medium['artworks'], artwork)
+
+
 # Funciones para creacion de datos
 
 
@@ -238,6 +279,20 @@ def newNationality(name):
     return nationality
 
 
+
+def newArtistaObra(name):
+    """
+    Crea una nueva estructura para modelar las obras con un artista 
+    específico.
+    """
+    artistaObra = {'name': "",
+              "artworks": None}
+    artistaObra['name'] = name
+    artistaObra['artworks'] = lt.newList('SINGLE_LINKED', compareArtworksByNationality)
+    return artistaObra
+
+
+
 # Funciones de consulta
 
 
@@ -274,7 +329,7 @@ def getArtworksByMedium(catalog, namemedium):
 
 def artworksNacionalidad(catalog):
     """
-    Clasifica las obras por la nacionalidad de sus creadores.
+    Req 4: Clasifica las obras por la nacionalidad de sus creadores.
     """
     llaves = mp.keySet(catalog["nationality"])
     lstNacion = lt.newList(datastructure="ARRAY_LIST")
@@ -289,7 +344,6 @@ def artworksNacionalidad(catalog):
 
 
 
-
 def cantObrasNacion(catalog, nacion):
     nacion = mp.get(catalog["nationality"], nacion)
     if nacion:
@@ -297,6 +351,80 @@ def cantObrasNacion(catalog, nacion):
         return lt.size(result)
     return None
 
+
+
+def artistsProlific(catalog, cantArtist, anioI, anioF):
+    """
+    Req 6: Encuentra los artistas más prolíficos del museo.
+    """
+    artistasFiltrados = sortArtists(catalog, anioI, anioF)
+    lstArtistasObra = lt.newList(datastructure="ARRAY_LIST")
+    for key in lt.iterator(artistasFiltrados):
+        result = cantObrasyMediosArtista(catalog, key["DisplayName"])
+        datosArtist = {"Nombre": key["DisplayName"],
+                        "Año": key["BeginDate"],
+                        "Género": key["Gender"]}
+        tamanio = result[0]
+        cantMedios = result[1]
+        nombreMedio = result[2]
+        listaMedios = result[3]
+        lt.addLast(lstArtistasObra, (datosArtist,tamanio,cantMedios,nombreMedio,listaMedios))
+
+    ordenada = sm.sort(lstArtistasObra, cmpArtistasObra)
+    res = lt.subList(ordenada,1,cantArtist)
+    return res
+    
+
+
+
+def cantObrasyMediosArtista(catalog, artista):
+    """
+    Retorna la cantidad de obras del artista, la cantidad de 
+    medios utilizados y una pareja llave valor, siendo la 
+    llave el medio más usado y la pareja una lista con las obras de 
+    ese medio de ese artista
+    """
+    artist = mp.get(catalog["artistaObra"], artista)
+    tamanio = 0
+    cantMedios = 0
+    listaMedios = []
+    nombreMedio = ""
+    if artist:
+        result = (me.getValue(artist))["artworks"]
+        tamanio = lt.size(result)
+        medios = mp.newMap(800,
+                            maptype='PROBING',
+                            loadfactor=0.5,
+                            comparefunction=compareArtworksByMedium)
+        for obra in lt.iterator(result):
+            addMediumBono(medios, obra["Medium"], obra)
+        lstObrasMedio = lt.newList(datastructure="ARRAY_LIST")
+        for key in lt.iterator(mp.keySet(medios)):
+            tamanio2 = cantObrasMedio(medios, key)
+            lt.addLast(lstObrasMedio, (key,tamanio2))
+        ordenada = sm.sort(lstObrasMedio, cmpObrasMedio)
+        cantMedios = lt.size(ordenada)
+        mayorMedio = lt.getElement(ordenada, 1)
+        res = mp.get(medios, mayorMedio[0])
+        if res:
+            mayorMedio = me.getValue(res)
+            listaMediosTotal = mayorMedio["artworks"]
+            if lt.size(listaMediosTotal) < 5:
+                listaMedios = lt.subList(listaMediosTotal,1,lt.size(listaMediosTotal))
+            else:
+                listaMedios = lt.subList(listaMediosTotal,1,5)
+            nombreMedio = mayorMedio["name"]
+        return tamanio, cantMedios, nombreMedio, listaMedios
+    return None, None, None, None
+
+
+
+def cantObrasMedio(medios, llave):
+    llave = mp.get(medios, llave)
+    if llave:
+        result = (me.getValue(llave))["artworks"]
+        return lt.size(result)
+    return None
 
 
 # Funciones utilizadas para comparar elementos dentro de una lista
@@ -384,6 +512,21 @@ def compareArtworksByNationality(nationality, nacionalidad):
         return -1
 
 
+def compareArtworksByArtist(artist, artista):
+    """
+    Compara dos artistas de obras. El primero es una cadena
+    y el segundo un entry de un map
+    """
+    llaveArtista = me.getKey(artista)
+    if (artist == llaveArtista):
+        return 0
+    elif (artist > llaveArtista):
+        return 1
+    else:
+        return -1
+        
+
+
 def cmpNacionalidad(nacionalidad1, nacionalidad2):
     """
     Devuelve verdadero (True) si nacionalidad1 es mayor a nacionalidad2.
@@ -410,6 +553,48 @@ def cmpArtworkByDateAcquired(artwork1, artwork2):
     artwork2: informacion de la segunda obra que incluye su valor 'DateAcquired'
     """
     return (artwork1)<(artwork2) and artwork1 != None and artwork2 != None
+
+
+def cmpObrasMedio(medio1, medio2):
+    """
+    Devuelve verdadero (True) si medio1 es mayor a medio2.
+    """
+    if medio1[0] == "":
+        medio1 = (medio1[0],0)
+    if medio2[0] == "":
+        medio2 = (medio2[0],0)
+    return medio1[1]>medio2[1]
+
+
+
+def cmpArtistasObra(artista1, artista2):
+    """
+    Devuelve verdadero (True) si el artista1 es más prolífico
+    que el artista2.
+    """
+    if artista1 == None or artista1 == "":
+        artista1 = [0,0,0]
+    if artista2 == None or artista2 == "":
+        artista2 = [0,0,0]
+    if artista1[1] == None or artista1[1] == "":
+        artista1 = (artista1[0],0,artista1[2])
+    if artista2[1] == None or artista2[1] == "":
+        artista2 = (artista2[0],0,artista2[2])
+    if artista1[2] == None or artista1[2] == "":
+        artista1 = (artista1[0],artista1[1],0)
+    if artista2[2] == None or artista2[2] == "":
+        artista2 = (artista2[0],artista2[1],0)
+    result = True
+    if artista1[1]>artista2[1]:
+        result = True
+    elif artista1[1]<artista2[1]:
+        result = False
+    else:
+        if artista1[2]>artista2[2]:
+            result = True
+        elif artista1[2]<artista2[2]:
+            result = False
+    return result
 
 
 # Funciones de ordenamiento

@@ -110,3 +110,10 @@ def artworksNacionalidad(catalog):
     result = model.artworksNacionalidad(catalog)
     return result
 
+
+def artistsProlific(catalog, cantArtist, anioI, anioF):
+    """
+    Encuentra los artistas más prolíficos del museo.
+    """
+    result = model.artistsProlific(catalog, cantArtist, anioI, anioF)
+    return result

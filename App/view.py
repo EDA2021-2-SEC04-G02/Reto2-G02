@@ -140,6 +140,32 @@ def printArtworksNacionalidad(result):
 
 
 
+
+def printArtistsProlific(res, cantArtist, anioI, anioF):
+    print("\nLos ",cantArtist,"artistas más prolíficos entre ",anioI," y ",anioF," son: \n")
+    for artist in lt.iterator(res):
+        print("Nombre: "+artist[0]["Nombre"])
+        print("Año de nacimiento: "+artist[0]["Año"])
+        print("Género: "+artist[0]["Género"])
+        print("Total de Obras: ",artist[1])
+        print("Total de Medios: ",artist[2])
+        print("Medio más usado: ",artist[3])
+        print("Primeras 5 obras de la técnica mas utilizada: ")
+        for obra in lt.iterator(artist[4]):
+            print("\n\tTítulo: "+obra["Title"])
+            print("\tFecha: "+obra["Date"])
+            print("\tFecha de adquisición: "+obra["DateAcquired"])
+            print("\tMedio: "+obra["Medium"])
+            print("\tDepartamento: "+obra["Department"])
+            print("\tClasificación: "+obra["Classification"])
+            print("\tDimensiones: "+obra["Dimensions"])
+        print("\n")
+
+
+
+
+
+
 catalog = None
 
 """
@@ -218,7 +244,11 @@ while True:
 
 
     elif int(inputs[0]) == 7:
-        ""
+        cantArtist = int(input("Ingrese el número de artistas que desea en la clasificación: "))
+        anioI = int(input("Ingrese el año incial del rango: "))
+        anioF = int(input("Ingrese el año final del rango: "))
+        result = controller.artistsProlific(catalog, cantArtist, anioI, anioF)
+        printArtistsProlific(result, cantArtist, anioI, anioF)
     
 
     else:
