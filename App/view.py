@@ -141,6 +141,40 @@ def printArtworksNacionalidad(result):
 
 
 
+
+def printCostoTransDept(result):
+    print("\nTotal de obras para transportar: ")
+    print(result[0])
+    print("\nPrecio del servicio final estimado (USD): ")
+    print(result[1])
+    print("\nPeso final estimado (kg): ")
+    print(result[2])
+    print("\nLas 5 obras más antiguas a transportar: \n")
+    for i in range(1, lt.size(result[3])+1):
+        print("Título: "+lt.getElement(result[3],i)[0]["Title"])
+        print("Artista(s): "+str(lt.getElement(result[3],i)[0]["Artists"]["elements"])[1:-1])
+        print("Clasificación: "+lt.getElement(result[3],i)[0]["Classification"])
+        print("Fecha: "+lt.getElement(result[3],i)[0]["Date"])
+        print("Medio: "+lt.getElement(result[3],i)[0]["Medium"])
+        print("Dimensiones: "+lt.getElement(result[3],i)[0]["Dimensions"])
+        print("Costo asociado al transporte: "+str(round(lt.getElement(result[3],i)[1],3)))
+        print("\n")
+    print(". . . . . . . . . . . . . . . . . . . . . . . . . . . . . .\n")
+    print("\nLas 5 obras más costosas a transportar: \n")
+    for i in range(1, lt.size(result[4])+1):
+        print("Título: "+lt.getElement(result[4],i)[0]["Title"])
+        print("Artista(s): "+str(lt.getElement(result[4],i)[0]["Artists"]["elements"])[1:-1])
+        print("Clasificación: "+lt.getElement(result[4],i)[0]["Classification"])
+        print("Fecha: "+lt.getElement(result[4],i)[0]["Date"])
+        print("Medio: "+lt.getElement(result[4],i)[0]["Medium"])
+        print("Dimensiones: "+lt.getElement(result[4],i)[0]["Dimensions"])
+        print("Costo asociado al transporte: "+str(round(lt.getElement(result[4],i)[1],3)))
+        print("\n")
+
+
+
+
+
 def printArtistsProlific(res, cantArtist, anioI, anioF):
     print("\nLos ",cantArtist,"artistas más prolíficos entre ",anioI," y ",anioF," son: \n")
     for artist in lt.iterator(res):
@@ -238,7 +272,7 @@ while True:
     elif int(inputs[0]) == 6:
         dept = input("Ingrese el departamente del museo del que quiere conocer el costo de transporte: ")
         result = controller.costoTransDept(catalog, dept)
-        "printCostoTransDept(result)"
+        printCostoTransDept(result)
     
 
 

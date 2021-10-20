@@ -52,7 +52,7 @@ def cargarData(catalog):
     loadArtworks(catalog)
     stop_time = time.process_time()
     elapsed_time_mseg = (stop_time - start_time)*1000
-    print(elapsed_time_mseg)
+    print("date",elapsed_time_mseg)
 
 
 def loadArtists(catalog):
@@ -61,7 +61,7 @@ def loadArtists(catalog):
     nacionalidad, genero, año de nacimiento, año de defunción, Wiki QID 
     y ULAN ID.
     """
-    artistsfile = cf.data_dir + 'Artists-utf8-small.csv'
+    artistsfile = cf.data_dir + 'Artists-utf8-5pct.csv'
     input_file = csv.DictReader(open(artistsfile, encoding='utf-8'))
     for artist in input_file:
         model.addArtist(catalog, artist)
@@ -73,7 +73,7 @@ def loadArtworks(catalog):
     artista(s), fecha de creación, medio, dimensiones, fecha de 
     adquisición del museo, entre otros.
     """
-    artworksfile = cf.data_dir + 'Artworks-utf8-small.csv'
+    artworksfile = cf.data_dir + 'Artworks-utf8-5pct.csv'
     input_file = csv.DictReader(open(artworksfile, encoding='utf-8'))
     for artwork in input_file:
         model.addArtwork(catalog, artwork)
@@ -109,6 +109,17 @@ def artworksNacionalidad(catalog):
     """
     result = model.artworksNacionalidad(catalog)
     return result
+
+
+
+def costoTransDept(catalog, dept):
+    """
+    Calcula el costo de transporte por el departamento al que pertenecen
+    las obras.
+    """
+    result = model.costoTransDept(catalog, dept)
+    return result
+
 
 
 def artistsProlific(catalog, cantArtist, anioI, anioF):
