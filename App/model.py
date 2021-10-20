@@ -74,8 +74,8 @@ def newCatalog():
                             comparefunction=compareArtistsByBeginDate)
 
     catalog['dateAdquirido'] = mp.newMap(900,
-                                    maptype='CHAINING',
-                                    loadfactor=4.0,
+                                    maptype='PROBING',
+                                    loadfactor=0.5,
                                     comparefunction=compareArtworksByDate)
 
     catalog['medium'] = mp.newMap(800,
