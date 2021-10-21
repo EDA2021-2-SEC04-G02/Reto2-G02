@@ -127,6 +127,29 @@ def printArtworks(ord_artworks, tamanio):
         
 
 
+def printArtworksByMedium(result, nombreArtista, catalog):
+    print(" " + nombreArtista + " tiene un total de " + str(result[0]) + " obras a su nombre en el museo")
+    print("\n")
+    print("Existen un total de "+str(result[1]) + " medios usados")
+    print("\n")
+    print("Su técnica mas usada fue " + str(result[2]) + "con un total de " +str(lt.size(result[3])))
+    print("\n")
+    print(". . . . . . . . . . . . . . . . . . . . . . . . . . . . . .\n")
+    for artist in lt.iterator(catalog):
+        print("Nombre: "+artist[0]["Nombre"])
+        print("Año de nacimiento: "+artist[0]["Año"])
+        print("Género: "+artist[0]["Género"])
+        print("Total de Obras: ",artist[1])
+        print("Total de Medios: ",artist[2])
+        print("Medio más usado: ",artist[3])
+        print("Primeras 5 obras de la técnica mas utilizada: ")
+        for obra in lt.iterator(artist[4]):
+            print("\n\tTítulo: "+obra["Title"])
+            print("\tFecha: "+obra["Date"])
+            print("\tMedio: "+obra["Medium"])
+            print("\tDimensiones: "+obra["Dimensions"])
+        print("\n")
+
 
 
 def printArtworksNacionalidad(result):
@@ -257,6 +280,11 @@ while True:
         anioF = int(input("Ingrese el año final del rango: "))
         result = controller.sortArtworks(catalog, anioI, mesI, diaI, anioF, mesF, diaF)
         printSortArtworks(result)
+
+    elif int(inputs[0]) == 4:
+        nombreArtista=input("Ingrese el nombre del artista que desea consultar")
+        result= controller.artworksByMedium(catalog, nombreArtista)
+        printArtworksByMedium(result, nombreArtista)
 
 
 
