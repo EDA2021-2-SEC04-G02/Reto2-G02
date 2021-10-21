@@ -360,6 +360,54 @@ def getArtworksByMedium(catalog, namemedium):
     return None
 
 
+def artworksByMedium(catalog, artista):
+    """
+    Req 3
+    Clasifica las obras de un artista de acuerdo al medio utilizado.
+    Retorna la cantidad de obras del artista, la cantidad de 
+    medios utilizados y una pareja llave valor, siendo la 
+    llave el medio más usado y la pareja una lista con las obras de 
+    ese medio de ese artista.
+    """
+    artist = mp.get(catalog["artistaObra"], artista)
+    tamanio = 0
+    cantMedios = 0
+    listaMedios = []
+    nombreMedio = ""
+    if artist:
+        result = (me.getValue(artist))["artworks"]
+        tamanio = lt.size(result)
+        medios = mp.newMap(800,
+                            maptype='PROBING',
+                            loadfactor=0.5,
+                            comparefunction=compareArtworksByMedium)
+        for obra in lt.iterator(result):
+            addMediumBono(medios, obra["Medium"], obra)
+        lstObrasMedio = lt.newList(datastructure="ARRAY_LIST")
+        for key in lt.iterator(mp.keySet(medios)):
+            tamanio2 = cantObrasMedio(medios, key)
+            lt.addLast(lstObrasMedio, (key,tamanio2))
+        ordenada = sm.sort(lstObrasMedio, cmpObrasMedio)
+        cantMedios = lt.size(ordenada)
+        mayorMedio = lt.getElement(ordenada, 1)
+        res = mp.get(medios, mayorMedio[0])
+        if res:
+            mayorMedio = me.getValue(res)
+            listaMediosTotal = mayorMedio["artworks"]
+            if lt.size(listaMediosTotal) < 5:
+                listaMedios = lt.subList(listaMediosTotal,1,lt.size(listaMediosTotal))
+            else:
+                listaMedios = lt.subList(listaMediosTotal,1,5)
+            nombreMedio = mayorMedio["name"]
+        return tamanio, cantMedios, nombreMedio, listaMedios
+    return None, None, None, None
+    
+
+
+    return None
+
+
+    
 
 def artworksNacionalidad(catalog):
     """
