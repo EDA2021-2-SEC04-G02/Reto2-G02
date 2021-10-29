@@ -68,6 +68,12 @@ def newCatalog():
     """
     Este indice crea un map cuya llave es el medio de la obra
     """
+
+    catalog['ID'] = mp.newMap(800,
+                                   maptype='PROBING',
+                                   loadfactor=0.5,
+                                   comparefunction=compareArtworksByMedium)
+
     catalog['date'] = mp.newMap(150,
                             maptype='CHAINING',
                             loadfactor=4.0,
@@ -114,9 +120,17 @@ def addArtwork(catalog, artwork):
     Finalmente crea una entrada en el Map de años, para indicar que este
     libro fue publicaco en ese año.
     """
-    nombresyNacionalidades = encontrarNombresyNacionalidades(artwork["ConstituentID"][1:-1].split(","), catalog)
-    artwork["Artists"] = nombresyNacionalidades[0]
-    artwork["Nationalities"] = nombresyNacionalidades[1]
+    nombres = lt.newList(datastructure="ARRAY_LIST")
+    nacionalidades = lt.newList(datastructure="ARRAY_LIST")
+    for artista in artwork["ConstituentID"][1:-1].split(","):
+        ID = mp.get(catalog["ID"], artista)
+        if ID:
+            artistID = me.getValue(ID)['artists']
+            for artist in lt.iterator(artistID):
+                lt.addLast(nombres, artist["DisplayName"])
+                lt.addLast(nacionalidades, artist["Nationality"])
+    artwork["Artists"] = nombres
+    artwork["Nationalities"] = nacionalidades
     lt.addLast(catalog['artworks'], artwork)
     addMedium(catalog, artwork["Medium"], artwork)
     addDateAdquirido(catalog, artwork["DateAcquired"], artwork)
@@ -133,6 +147,7 @@ def addArtist(catalog, artist):
     Adiciona un artista a la lista
     """
     lt.addLast(catalog['artists'], artist)
+    addID(catalog,artist["ConstituentID"],artist)
     addBeginDate(catalog, artist["BeginDate"], artist)
 
 
@@ -150,6 +165,21 @@ def addBeginDate(catalog, nameDate, artist):
         date = newDate(str(nameDate))
         mp.put(dates, str(nameDate), date)
     lt.addLast(date['artists'], artist)
+
+
+def addID(catalog, nameID, artist):
+    """
+    Esta función adiciona un IDartista a la lista de una fecha.
+    """
+    IDs = catalog['ID']
+    existID = mp.contains(IDs, str(nameID))
+    if existID:
+        entry = mp.get(IDs, str(nameID))
+        ID = me.getValue(entry)
+    else:
+        ID = newDate(str(nameID))
+        mp.put(IDs, str(nameID), ID)
+    lt.addLast(ID['artists'], artist)
 
 
 
