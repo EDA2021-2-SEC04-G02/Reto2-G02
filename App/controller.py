@@ -61,7 +61,7 @@ def loadArtists(catalog):
     nacionalidad, genero, año de nacimiento, año de defunción, Wiki QID 
     y ULAN ID.
     """
-    artistsfile = cf.data_dir + 'Artists-utf8-small.csv'
+    artistsfile = cf.data_dir + 'Artists-utf8-large.csv'
     input_file = csv.DictReader(open(artistsfile, encoding='utf-8'))
     for artist in input_file:
         model.addArtist(catalog, artist)
@@ -73,7 +73,7 @@ def loadArtworks(catalog):
     artista(s), fecha de creación, medio, dimensiones, fecha de 
     adquisición del museo, entre otros.
     """
-    artworksfile = cf.data_dir + 'Artworks-utf8-small.csv'
+    artworksfile = cf.data_dir + 'Artworks-utf8-large.csv'
     input_file = csv.DictReader(open(artworksfile, encoding='utf-8'))
     for artwork in input_file:
         model.addArtwork(catalog, artwork)
